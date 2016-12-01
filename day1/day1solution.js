@@ -1,36 +1,62 @@
-var fs = require('fs');
-
-fs.readFile(__dirname + '/day1input.txt', 'utf8', function (err,data) {
-  if (err) {
-    return console.log(err);
-  }
-  return data
-});
-
 var test = 'R4, R3, R5, L3, L5, R2, L2, R5'
 
 function parseInput(longString){
   return longString.split(',').map(str => { 
     return str.trim() 
   }).map(str => {
-    return createDirectionObj(str)
+    return createInstructionObj(str)
   })
 }
 
-function createDirectionObj(str){
+function createInstructionObj(str){
   return {
     "direction": str.substring(0,1),
-    "blocks": str.substring(1)
+    "blocks": parseInt(str.substring(1))
   }
 }
 
-function calculateFacing(curr, new){
+function turn(curr, change){
   var clockface = ['U', 'R', 'D', 'L', 'U']
-  // receiving an 'R' instruction should move your clockface position n + 1
-  // receiving an 'L' instruction should move your clockface position n - 1
+  var currentPos = clockface.indexOf(curr)
+
+  if (change === 'L') {
+    if (curr === 'U') {
+      return 'L'
+    }
+    else {
+      return clockface[(currentPos - 1)]
+    }
+  }
+  else if (change === 'R') {
+    return clockface[(currentPos + 1)]
+  }
 }
+
+function move(instruction, currentPos){
+  var num = instruction.blocks
+  // next: have to add or subtract from the axis based on the given direction...
+}
+
+function subtractFromAxis(obj, axis, diff){
+  obj[axis] -= diff
+  return obj
+}
+
+function addToAxis(obj, axis, diff){
+  obj[axis] += diff
+  return obj
+}
+
+
+
 
 var result = parseInput(test)
 
 console.log(result)
 
+module.exports = {
+  turn: turn,
+  parseInput: parseInput,
+  subtractFromAxis: subtractFromAxis,
+  addToAxis: addToAxis
+}
