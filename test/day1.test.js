@@ -58,5 +58,22 @@ describe('Day1', function(){
       expect(result).to.have.property('y', 2)
     });
   });
+  describe('#move()', function(){
+    it('moving while facing up increases the y axis value by the number specified', function(){
+      var result = day1.move({"blocks": 5},{"x": 0, "y": 0, "direction": 'U'})
+      expect(result).to.be.an('object');
+      expect(result).to.have.property('y', 5)
+    });
+    it('moving while facing left decreases the x axis value by the number specified', function(){
+      var result = day1.move({"blocks": 5},{"x": -1, "y": 0, "direction": 'L'})
+      expect(result).to.have.property('x', -6)
+    });
+  });
+  describe('#handleOneInstruction()', function(){
+    it('adds 5 to the x axis when facing up, and told to move R5', function(){
+      var result = day1.handleOne({"blocks": 5, "direction": 'R'}, {"x": 0, "y": 0, "direction": 'U'})
+      expect(result).to.have.property('x', 5)
+    });
+  });
 
 });

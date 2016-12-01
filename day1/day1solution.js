@@ -15,6 +15,28 @@ function createInstructionObj(str){
   }
 }
 
+function handleAllInstructions(instructionArray, accumulator){
+  if (instructionArray.length === 0) {
+    return accumulator
+  }
+  else {
+    var current = instructionArray.shift()
+    // call the function that turns and store it in the result variable
+    var result ;
+
+    return handleAllInstructions(instructionArray, result)
+  }
+}
+
+function handleOneInstruction(instr, acc){
+  return new Promise((resolve, reject) => {
+    resolve( turn(acc.direction, instr.direction) );
+  }).then(newDirection => {
+    acc.direction = newDirection
+    return move(instr, acc)
+  });
+}
+
 function turn(curr, change){
   var clockface = ['U', 'R', 'D', 'L', 'U']
   var currentPos = clockface.indexOf(curr)
@@ -33,8 +55,19 @@ function turn(curr, change){
 }
 
 function move(instruction, currentPos){
-  var num = instruction.blocks
   // next: have to add or subtract from the axis based on the given direction...
+  if (currentPos.direction === 'R') {
+    return addToAxis(currentPos, 'x', instruction.blocks)
+  }
+  else if (currentPos.direction === 'L') {
+    return subtractFromAxis(currentPos, 'x', instruction.blocks)
+  }
+  else if (currentPos.direction === 'U') {
+    return addToAxis(currentPos, 'y', instruction.blocks)
+  }
+  else if (currentPos.direction === 'D') {
+    return subtractFromAxis(currentPos, 'y', instruction.blocks)
+  }
 }
 
 function subtractFromAxis(obj, axis, diff){
@@ -58,5 +91,7 @@ module.exports = {
   turn: turn,
   parseInput: parseInput,
   subtractFromAxis: subtractFromAxis,
-  addToAxis: addToAxis
+  addToAxis: addToAxis,
+  move: move,
+  handleOne: handleOneInstruction
 }
