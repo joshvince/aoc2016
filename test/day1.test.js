@@ -17,7 +17,7 @@ describe('Array', function(){
 });
 
 
-describe('Day1', function(){
+describe('Day1Part1', function(){
   describe('#turn()', function(){
     var instruction = {
       "direction": 'L',
@@ -141,11 +141,30 @@ describe('Day1', function(){
 
   });
 
-  describe('#solve()', function(){
+  describe('#solvePartOne()', function(){
     var input = 'R5, L5, R5, R3'
     it('calculates the number of blocks away', function(){
-      var result = day1.solve(input)
+      var result = day1.solvePartOne(input)
       assert.equal(12, result);
     });
   });
 });
+
+describe('Day1Part2', function(){
+  var input = 'R8, R4, R4, R8'
+  var initialPos = {
+    "x": 0,
+    "y": 0,
+    "direction": 'U'
+  };
+  describe('#test()', function(){
+    it('creates a path object depending on which path was travelled', function(){
+      var result = day1.startPositionEndPosition(initialPos, {"blocks": 4, "direction": 'R'}, day1.generatePathDetails)
+      console.log(result)
+    });
+    it('sometimes returns the end position', function(){
+      var result = day1.startPositionEndPosition(initialPos, {"blocks": 4, "direction": 'R'}, day1.onlyEndPosition)
+      console.log(result)
+    });
+  });
+})

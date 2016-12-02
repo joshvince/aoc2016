@@ -1,11 +1,16 @@
 var fs = require('fs');
 require('babel-register');
 
-function solve(day){
+function solve(day, part){
   var directoryPath = `${__dirname}/day${day}`
   loadInput(day, directoryPath).then(data => {
     var Solution = require(`${directoryPath}/solution.js`)
-    console.log(Solution.solve(data))
+    if (part === 1) {
+      console.log(Solution.solvePartOne(data))
+    }
+    else {
+      console.log(Solution.solvePartTwo(data))
+    }
   }).catch(error => {
     console.log(error)
   })
