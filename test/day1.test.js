@@ -5,7 +5,8 @@ var chai = require('chai')
 
 
 
-var day1 = require('../day1/day1solution.js')
+var day1 = require('../day1/solution.js')
+
 
 describe('Array', function(){
   describe('#indexOf()', function() {
@@ -15,30 +16,40 @@ describe('Array', function(){
   });
 });
 
+
 describe('Day1', function(){
-  var directionObj = {
-    "direction": 'U',
-    "blocks": 5
-  }
-  var positionObj = {
-    "x": 0,
-    "y": 0,
-    "direction": 'U'
-  }
   describe('#turn()', function(){
+    var instruction = {
+      "direction": 'L',
+      "blocks": 5
+    };
+    var position = {
+      "x": 0,
+      "y": 0,
+      "direction": 'U'
+    };
     it('ends up facing left if currently facing up and told to turn left', function(){
-      assert.equal('L', day1.turn('U', 'L'));
+      day1.turn(instruction, position);
+      expect(position).to.have.property('direction', 'L')
     });
-    it('ends up facing right if currently facing up and told to turn right', function(){
-      assert.equal('R', day1.turn('U', 'R'));
+    it('ends up facing up if currently facing left and told to turn right', function(){
+     day1.turn({"direction": 'R'}, position);
+     expect(position).to.have.property('direction', 'U')
     });
-    it('ends up facing down if currently facing left and told to turn left', function(){
-      assert.equal('D', day1.turn('L', 'L'));
+    it('ends up facing down if currently facing up and told to turn right and right again', function(){
+     day1.turn({"direction": 'R'}, position);
+     day1.turn({"direction": 'R'}, position);
+     expect(position).to.have.property('direction', 'D')
     });
   });
+
   describe('#parseInput()', function(){
     it('turns the string into an array of objects that fit the spec', function(){
       var input = 'U5, R5'
+        var directionObj = {
+          "direction": 'U',
+          "blocks": 5
+        }
       var result = day1.parseInput(input);
       expect(result).to.be.an('array');
       expect(result).to.include(directionObj);
@@ -46,13 +57,29 @@ describe('Day1', function(){
       expect(result[0].direction).to.be.a('string');
     });
   });
+
   describe('#subtractFromAxis()', function(){
+    var positionObj = {
+      "x": 0,
+      "y": 0,
+      "direction": 'U'
+    }
     it('updates the accumulator object by subtracting from the given axis', function(){
       var result = day1.subtractFromAxis(positionObj, 'x', 2)
       expect(result).to.have.property('x', -2)
     });
   });
+
   describe('#addToAxis()', function(){
+    var directionObj = {
+      "direction": 'U',
+      "blocks": 5
+    }
+    var positionObj = {
+      "x": 0,
+      "y": 0,
+      "direction": 'U'
+    }
     it('updates the accumulator object by adding to the given axis', function(){
       var result = day1.addToAxis(positionObj, 'y', 2)
       expect(result).to.have.property('y', 2)
@@ -69,11 +96,56 @@ describe('Day1', function(){
       expect(result).to.have.property('x', -6)
     });
   });
+
   describe('#handleOneInstruction()', function(){
-    it('adds 5 to the x axis when facing up, and told to move R5', function(){
-      var result = day1.handleOne({"blocks": 5, "direction": 'R'}, {"x": 0, "y": 0, "direction": 'U'})
-      expect(result).to.have.property('x', 5)
+    var instructionOne = {
+      "direction": 'R',
+      "blocks": 5
+    }
+    var instructionTwo = {
+      "direction": 'L',
+      "blocks": 20
+    }
+    var instructionThree = {
+      "direction": 'L',
+      "blocks": 50
+    }
+    var positionObj = {
+      "x": 0,
+      "y": 0,
+      "direction": 'U'
+    }    
+    it('moves 5 along the x axis and ends up facing right when told to', function(){
+      day1.handleOne(positionObj, instructionOne)
+      expect(positionObj).to.have.property('x', 5)
+      expect(positionObj).to.have.property('y', 0)
+      expect(positionObj).to.have.property('direction', 'R')
+    });
+    it('handles negative numbers in the correct way', function(){
+      day1.handleOne(positionObj, instructionTwo)
+      day1.handleOne(positionObj, instructionThree)
+      expect(positionObj).to.have.property('x', -45)
+      expect(positionObj).to.have.property('y', 20)
+      expect(positionObj).to.have.property('direction', 'L')
     });
   });
 
+  describe('#handleAllInstructions()', function(){
+    var input = 'R5, L5, L5'
+    it('ends up in the right place facing the right way', function(){
+      var result = day1.handleAll(input)
+      expect(result).to.have.property('x', 0)
+      expect(result).to.have.property('y', 5)
+      expect(result).to.have.property('direction', 'L')
+    });
+
+  });
+
+  describe('#solve()', function(){
+    var input = 'R5, L5, R5, R3'
+    it('calculates the number of blocks away', function(){
+      var result = day1.solve(input)
+      assert.equal(12, result);
+    });
+  });
 });
