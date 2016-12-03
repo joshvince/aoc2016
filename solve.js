@@ -30,19 +30,19 @@ function loadInput(day, directory){
   })
 }
 
-function run(obj, callback){
-  obj.y += 5
-  if (typeof callback === 'function') {
-    var res = callback(obj);
-    console.log("returned the following: " + JSON.stringify(res))
-    return res;
-  }
-}
+// function run(obj, callback){
+//   obj.y += 5
+//   if (typeof callback === 'function') {
+//     var res = callback(obj);
+//     console.log("returned the following: " + JSON.stringify(res))
+//     return res;
+//   }
+// }
 
-function step1(obj){
-  obj.x += 5
-  return obj
-}
+// function step1(obj){
+//   obj.x += 5
+//   return obj
+// }
 
 
 module.exports = {

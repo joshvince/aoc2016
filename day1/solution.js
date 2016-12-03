@@ -1,4 +1,6 @@
-var test = 'R4, R3, R5, L3, L5, R2, L2, R5'
+/*
+Helpers:
+*/
 
 function parseInput(longString){
   return longString.split(',').map(str => { 
@@ -15,115 +17,21 @@ function createInstructionObj(str){
   }
 }
 
+// REMEMBER!!! The functions will be applied right-to-left
+function compose() {
+  var funcs = arguments;
+  return function() {
+    var args = arguments;
+    for (var i = funcs.length; i --> 0;) {
+      args = [funcs[i].apply(this, args)];
+    }
+    return args[0];
+  };
+};
+
 /*
-Part 2 pseudo code:
-
-An instruction creates a path.
-{x: 0, y: 0, direction: U} -> R3 creates:
-x: 1, y: 0
-x: 2, y: 0
-x: 3, y: 0
-
-I could keep a store of the paths, like:
-
-{
-  "x": {
-    "0": ["0"],
-    "1": ["0"],
-    "2": ["0"],
-    "3": ["0"]
-  },
-  "y": {
-    "0": ["1", "2", "3", "4"]
-  }
-}
-
-Then, i could write a lookup function that says, for each path object created:
-
-1: work out which axis we are travelling on.
-2: if obj[${axis}][${start position}] array contains the non-travelling axis value - we've crossed paths
-
-in the above example:
-
-{x: 1, y: 1, direction: L} -> L2, I would create:
-x: 0, y: 1
-x: -1, y: 1
-
-And then, because we are travelling on the Y axis, I should look up obj.y.1 -- if either 0 || 1 are present, we've crossed paths
-
-Otherwise, I should add all the values to the obj.y.1 array and keep going
-
-So: we want:
-
-A function to move us from one co-ordinate to another
-
-A function that tells us which path we are moving on, and how far we have come - DONE!
-
-A function that creates the traversed coordinates - DONE!
-
-A function that looks up the pathList object in the relevant array and checks if any of the traversed coordinates are already present
-
-A function that adds coordinates to the pathList object
-
+PART ONE:
 */
-
-
-
-
-
-
-
-
-// this is untested.... take a look at this...
-
-
-function run(currentPosition, instruction){
-  // come up with a better name for this...
-  return startPositionEndPosition(currentPosition, instruction, function(){
-    generatePathDetails(function(){
-      // from this closure we should be able to:
-      // -- grab the new position (first argument)
-      // -- grab the path object (second argument)
-    });
-  });
-}
-
-
-
-
-
-
-function startPositionEndPosition(currentPosition, instruction, callback){
-  var start = Object.assign({}, currentPosition)
-  var end = handleOneInstruction(currentPosition, instruction)
-  // pass the old object and the new object to the function that will generate the path details
-  return callback(start, end)
-}
-
-
-function generatePathDetails(oldPos, newPos, callback){
-  var pathObject;
-  if (oldPos.y === newPos.y) {
-    pathObject = createPathObject("y", oldPos.y, oldPos.x, newPos.x)
-  }
-  else {
-    pathObject = createPathObject("x", oldPos.x, oldPos.y, newPos.y)
-  }
-  // keep the new position and the path object and pass it to the next object in the chain
-  callback(newPos, pathObject)
-}
-
-function createPathObject(axis, street, start, end){
-  var object = {
-    "axis": axis,
-    "street": street.toString(),
-    "blocks": []
-  } 
-  for (var i = start; i <= end; i++) {
-    object.blocks.push(i.toString())
-  }
-  return object
-}
 
 function solvePartOne(instructions){
   var destination = handleAllInstructions(instructions)
@@ -158,7 +66,6 @@ function turn(instruction, currentPos){
   return currentPos
 }
 
-
 function move(instruction, currentPos){
   if (currentPos.direction === 'R') {
     return addToAxis(currentPos, 'x', instruction.blocks)
@@ -184,6 +91,140 @@ function addToAxis(obj, axis, diff){
   return obj
 }
 
+/* 
+PART TWO
+*/
+
+function solvePartTwo(input){
+  var instructions = parseInput(input),
+  initial = initialise()
+  return processAll(initial, instructions)
+}
+
+function initialise(){
+  var initPos = {"x": 0, "y": 0, "direction": 'U'},
+  initPath = [[0,0]]
+  return {
+    current: initPos,
+    former: null,
+    path: initPath
+  }
+}
+
+function processAll(positionObject, instructions){
+  var senseCheck = ['current', 'path', 'former'].filter(prop => { return Object.keys(positionObject).includes(prop) } )
+  if (senseCheck.length != 3) {
+    throw new TypeError ("invalid positionObject: \n" + JSON.stringify(positionObject))
+  }
+  else {
+    if (positionObject.hasOwnProperty('match')) {
+      var res = positionObject.match
+      return Math.abs(res[0]) + Math.abs(res[1])
+    }
+    else if (instructions.length === 0 ) {
+      throw new Error(`there was a problem with the input. You never visited anywhere twice. Output: \n
+        ${JSON.stringify(positionObject, null, 2)}`)
+    }
+    else {
+      return processOne(positionObject, instructions)
+    }   
+  }
+}
+
+function processOne(object, instructions) {
+  var nextInstruction = instructions.shift();
+  var result = executeOneCommand(object, nextInstruction)
+  // console.log(`process object is: \n ${JSON.stringify(result)} \n instructions list is: \n ${JSON.stringify(instructions)}`)
+  return processAll(result, instructions)
+}
+
+function executeOneCommand(object, instruction) {
+  var preppedObject = copyInstruction(object, instruction)
+  var execute = compose(updatePath, applyInstruction, moveCurrentToFormer)
+  return execute(preppedObject)
+}
+
+function newObject(object, key, value) {
+  var copy = Object.assign({}, object)
+  copy[key] = value
+  return copy
+}
+
+function copyInstruction(object, instruction) {
+  return newObject(object, "instruction", instruction)
+}
+
+function moveCurrentToFormer(object){
+  var copy = Object.assign({}, object.current)
+  return newObject(object, "former", copy)
+}
+
+function applyInstruction(object) {
+  var newPos = handleOneInstruction(object.current, object.instruction)
+  return newObject(object, "current", newPos)
+}
+
+function updatePath(object){
+  // console.log(`called updatePath with: \n ${JSON.stringify(object)}`)
+  var newPath = calculateCoords(object.former.x, object.current.x, object.former.y, object.current.y)
+  // console.log(`received these coordinates for newPath: \n${newPath}\n which is this long: ${newPath.length}`)
+  // console.log(`object path is this: \n${object.path}`)
+  // var dupes = newPath.find(coord => { return object.path.includes(coord) });
+  var dupes = newPath.find(coord => { return pairInArray(coord, object.path) })
+  // console.log(`returned this from dupes: \n${dupes}`)
+  if (typeof dupes !== 'undefined') {
+    return newObject(object, "match", dupes)
+  }
+  else {
+    var updatedPathArray = object.path.concat(newPath)
+    return newObject(object, "path", updatedPathArray)
+  }
+}
+
+function pairInArray(pair, array){
+  return array.find(el=>{
+    return samePair(pair, el);
+  })
+}
+
+function samePair(elOne, elTwo){
+  return elOne[0] == elTwo[0] && elOne[1] == elTwo[1]
+}
+
+// works out which pair is different and calls generator functions, returning the result of both
+function calculateCoords(xstart, xend, ystart, yend){
+  var increments = (xstart === xend) ? incrementalArray(ystart, yend) : incrementalArray(xstart, xend)
+  var result = (xstart === xend) ? shiftStaticValues(increments, xstart) : popStaticValues(increments, ystart)
+  return result
+}
+
+// builds an incremental array based on the start and end values.
+// like this: [0,1,2,3] or [3,2,1,0,-1]
+function incrementalArray(start, end){
+  var result = []
+  if (start < end) {
+    for (var i = start + 1; i <= end; i++) {
+      result.push(i);
+    }
+  }
+  else {
+    for (var i = start - 1; i >= end; i--) {
+      result.push(i);
+    }
+  }
+  return result
+}
+
+// adds the static (other axis') value to the front of each item in the array
+function shiftStaticValues(array, staticValue){
+  return array.map(el => {return [staticValue, el] })
+}
+
+// adds the static (other axis') value to the end of each item in the array
+function popStaticValues(array, staticValue){
+  return array.map(el => {return [el, staticValue] })
+}
+
 module.exports = {
   turn: turn,
   parseInput: parseInput,
@@ -193,8 +234,5 @@ module.exports = {
   handleOne: handleOneInstruction, 
   handleAll: handleAllInstructions,
   solvePartOne: solvePartOne,
-  generatePathDetails: generatePathDetails,
-  startPositionEndPosition: startPositionEndPosition,
-  onlyEndPosition: onlyEndPosition
-
+  solvePartTwo: solvePartTwo,
 }

@@ -3,46 +3,27 @@ var chai = require('chai')
 , expect = chai.expect
 , should = chai.should;
 
-
-
 var day1 = require('../day1/solution.js')
 
-
-describe('Array', function(){
-  describe('#indexOf()', function() {
-    it('should return -1 when the value is not present', function(){
-      assert.equal(-1, [1,2,3].indexOf(4));
-    });
-  });
-});
-
+/*
+TODO:
+Declutter this. 
+It's incredibly verbose as I am using this day as a learning excercise about what chai and mocha can do
+*/
 
 describe('Day1Part1', function(){
   describe('#turn()', function(){
-    var instruction = {
-      "direction": 'L',
-      "blocks": 5
-    };
     var position = {
       "x": 0,
       "y": 0,
       "direction": 'U'
     };
-    it('ends up facing left if currently facing up and told to turn left', function(){
-      day1.turn(instruction, position);
-      expect(position).to.have.property('direction', 'L')
-    });
-    it('ends up facing up if currently facing left and told to turn right', function(){
-     day1.turn({"direction": 'R'}, position);
-     expect(position).to.have.property('direction', 'U')
-    });
-    it('ends up facing down if currently facing up and told to turn right and right again', function(){
+    it('handles successive commands correctly', function(){
      day1.turn({"direction": 'R'}, position);
      day1.turn({"direction": 'R'}, position);
      expect(position).to.have.property('direction', 'D')
     });
   });
-
   describe('#parseInput()', function(){
     it('turns the string into an array of objects that fit the spec', function(){
       var input = 'U5, R5'
@@ -57,7 +38,6 @@ describe('Day1Part1', function(){
       expect(result[0].direction).to.be.a('string');
     });
   });
-
   describe('#subtractFromAxis()', function(){
     var positionObj = {
       "x": 0,
@@ -69,7 +49,6 @@ describe('Day1Part1', function(){
       expect(result).to.have.property('x', -2)
     });
   });
-
   describe('#addToAxis()', function(){
     var directionObj = {
       "direction": 'U',
@@ -150,21 +129,12 @@ describe('Day1Part1', function(){
   });
 });
 
-describe('Day1Part2', function(){
-  var input = 'R8, R4, R4, R8'
-  var initialPos = {
-    "x": 0,
-    "y": 0,
-    "direction": 'U'
-  };
-  describe('#test()', function(){
-    it('creates a path object depending on which path was travelled', function(){
-      var result = day1.startPositionEndPosition(initialPos, {"blocks": 4, "direction": 'R'}, day1.generatePathDetails)
-      console.log(result)
-    });
-    it('sometimes returns the end position', function(){
-      var result = day1.startPositionEndPosition(initialPos, {"blocks": 4, "direction": 'R'}, day1.onlyEndPosition)
-      console.log(result)
-    });
-  });
+describe('Day1Part2', function(){  
+  describe('#solvePartTwo()', function () {
+    it('solves the example input', function () {
+      var exampleInput = 'R8, R4, R4, R8'
+      var result = day1.solvePartTwo(exampleInput)
+      assert.equal(result, 4)
+    })
+  })
 })
