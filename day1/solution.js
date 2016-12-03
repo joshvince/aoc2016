@@ -1,4 +1,6 @@
-var test = 'R4, R3, R5, L3, L5, R2, L2, R5'
+/*
+Helpers:
+*/
 
 function parseInput(longString){
   return longString.split(',').map(str => { 
@@ -15,7 +17,23 @@ function createInstructionObj(str){
   }
 }
 
-function solve(instructions){
+// REMEMBER!!! The functions will be applied right-to-left
+function compose() {
+  var funcs = arguments;
+  return function() {
+    var args = arguments;
+    for (var i = funcs.length; i --> 0;) {
+      args = [funcs[i].apply(this, args)];
+    }
+    return args[0];
+  };
+};
+
+/*
+PART ONE:
+*/
+
+function solvePartOne(instructions){
   var destination = handleAllInstructions(instructions)
   return destination.x + destination.y
 }
@@ -48,9 +66,7 @@ function turn(instruction, currentPos){
   return currentPos
 }
 
-
 function move(instruction, currentPos){
-  // next: have to add or subtract from the axis based on the given direction...
   if (currentPos.direction === 'R') {
     return addToAxis(currentPos, 'x', instruction.blocks)
   }
@@ -75,6 +91,140 @@ function addToAxis(obj, axis, diff){
   return obj
 }
 
+/* 
+PART TWO
+*/
+
+function solvePartTwo(input){
+  var instructions = parseInput(input),
+  initial = initialise()
+  return processAll(initial, instructions)
+}
+
+function initialise(){
+  var initPos = {"x": 0, "y": 0, "direction": 'U'},
+  initPath = [[0,0]]
+  return {
+    current: initPos,
+    former: null,
+    path: initPath
+  }
+}
+
+function processAll(positionObject, instructions){
+  var senseCheck = ['current', 'path', 'former'].filter(prop => { return Object.keys(positionObject).includes(prop) } )
+  if (senseCheck.length != 3) {
+    throw new TypeError ("invalid positionObject: \n" + JSON.stringify(positionObject))
+  }
+  else {
+    if (positionObject.hasOwnProperty('match')) {
+      var res = positionObject.match
+      return Math.abs(res[0]) + Math.abs(res[1])
+    }
+    else if (instructions.length === 0 ) {
+      throw new Error(`there was a problem with the input. You never visited anywhere twice. Output: \n
+        ${JSON.stringify(positionObject, null, 2)}`)
+    }
+    else {
+      return processOne(positionObject, instructions)
+    }   
+  }
+}
+
+function processOne(object, instructions) {
+  var nextInstruction = instructions.shift();
+  var result = executeOneCommand(object, nextInstruction)
+  // console.log(`process object is: \n ${JSON.stringify(result)} \n instructions list is: \n ${JSON.stringify(instructions)}`)
+  return processAll(result, instructions)
+}
+
+function executeOneCommand(object, instruction) {
+  var preppedObject = copyInstruction(object, instruction)
+  var execute = compose(updatePath, applyInstruction, moveCurrentToFormer)
+  return execute(preppedObject)
+}
+
+function newObject(object, key, value) {
+  var copy = Object.assign({}, object)
+  copy[key] = value
+  return copy
+}
+
+function copyInstruction(object, instruction) {
+  return newObject(object, "instruction", instruction)
+}
+
+function moveCurrentToFormer(object){
+  var copy = Object.assign({}, object.current)
+  return newObject(object, "former", copy)
+}
+
+function applyInstruction(object) {
+  var newPos = handleOneInstruction(object.current, object.instruction)
+  return newObject(object, "current", newPos)
+}
+
+function updatePath(object){
+  // console.log(`called updatePath with: \n ${JSON.stringify(object)}`)
+  var newPath = calculateCoords(object.former.x, object.current.x, object.former.y, object.current.y)
+  // console.log(`received these coordinates for newPath: \n${newPath}\n which is this long: ${newPath.length}`)
+  // console.log(`object path is this: \n${object.path}`)
+  // var dupes = newPath.find(coord => { return object.path.includes(coord) });
+  var dupes = newPath.find(coord => { return pairInArray(coord, object.path) })
+  // console.log(`returned this from dupes: \n${dupes}`)
+  if (typeof dupes !== 'undefined') {
+    return newObject(object, "match", dupes)
+  }
+  else {
+    var updatedPathArray = object.path.concat(newPath)
+    return newObject(object, "path", updatedPathArray)
+  }
+}
+
+function pairInArray(pair, array){
+  return array.find(el=>{
+    return samePair(pair, el);
+  })
+}
+
+function samePair(elOne, elTwo){
+  return elOne[0] == elTwo[0] && elOne[1] == elTwo[1]
+}
+
+// works out which pair is different and calls generator functions, returning the result of both
+function calculateCoords(xstart, xend, ystart, yend){
+  var increments = (xstart === xend) ? incrementalArray(ystart, yend) : incrementalArray(xstart, xend)
+  var result = (xstart === xend) ? shiftStaticValues(increments, xstart) : popStaticValues(increments, ystart)
+  return result
+}
+
+// builds an incremental array based on the start and end values.
+// like this: [0,1,2,3] or [3,2,1,0,-1]
+function incrementalArray(start, end){
+  var result = []
+  if (start < end) {
+    for (var i = start + 1; i <= end; i++) {
+      result.push(i);
+    }
+  }
+  else {
+    for (var i = start - 1; i >= end; i--) {
+      result.push(i);
+    }
+  }
+  return result
+}
+
+// adds the static (other axis') value to the front of each item in the array
+function shiftStaticValues(array, staticValue){
+  return array.map(el => {return [staticValue, el] })
+}
+
+// adds the static (other axis') value to the end of each item in the array
+function popStaticValues(array, staticValue){
+  return array.map(el => {return [el, staticValue] })
+}
+
 module.exports = {
   turn: turn,
   parseInput: parseInput,
@@ -83,5 +233,6 @@ module.exports = {
   move: move,
   handleOne: handleOneInstruction, 
   handleAll: handleAllInstructions,
-  solve: solve
+  solvePartOne: solvePartOne,
+  solvePartTwo: solvePartTwo,
 }
