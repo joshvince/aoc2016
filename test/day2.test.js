@@ -80,7 +80,7 @@ describe('Part Two', function () {
   describe('#solvePartTwo()', function () {
     it('correctly solves the example code', function () {
       var result = s.solvePartTwo(inputString)
-      console.log(result)
+      expect(result).to.be.equal('5DB3')
     })
   })
 })

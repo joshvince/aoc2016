@@ -28,13 +28,6 @@ function solvePartOne(input){
   return parseInt(codeArray.join(""))
 }
 
-/*
-moving up minuses 3 unless the start button is < 4
-moving down adds 3 unless the start button is > 6
-moving right adds 1 unless the start button is a multiple of 3
-moving left minuses 1 unless the answer is < 1 or a multiple of 3
-*/
-
 function move(pos, direction) {
   switch (direction) {
     case 'U':
@@ -94,17 +87,6 @@ function catchRight(prev, next) {
 PART TWO
 */
 
-/*
-
-[[x,x,1,x,x],[x,2,3,4,x],[5,6,7,8,9],[x,a,b,c,x],[x,x,d,x,x]]
-
-'D' moves you one more array along the pad array
-'R' moves you one index along the existing array
-'L' moves you one index previous along the existing array
-'U' moves you one array previous along the pad array
-if you ever get an 'undefined', you went wrong, and should stay where you are.
-*/
-
 function solvePartTwo(input) {
   var directions = parseInput(input)
   var codeArray = getAllNumbers([2,0], directions, executeOneCommand)
@@ -124,7 +106,12 @@ function printCode(positions){
 }
 
 function generateKeypad(){
-  return [[,,1,,],[,2,3,4,],[5,6,7,8,9],[,'a','b','c',],[,,'d',,]]
+  return [
+      [undefined,undefined,1,undefined,undefined],
+      [undefined,2,3,4,undefined],[5,6,7,8,9],
+      [undefined,'A','B','C',undefined],
+      [undefined,undefined,'D',undefined,undefined]
+    ]
 }
 
 function executeOneCommand(posArray, direction){
@@ -153,7 +140,7 @@ function executeOneCommand(posArray, direction){
 
 function validMove(row, pos){
   var keypad = generateKeypad()
-  if (typeof keypad[row][pos] === 'undefined'){
+  if (typeof keypad[row] === 'undefined' || typeof keypad[row][pos] === 'undefined'){
     return false
   }
   else {
