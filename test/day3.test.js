@@ -6,8 +6,5 @@ var chai = require('chai')
 var s = require('../day3/solution.js')
 
 describe('Day Three', function(){
-
-
-
-
+ 
 });
