@@ -1,7 +1,16 @@
 function solvePartOne(input){
   var array = parseInput(input)
-  console.log(array)
   return countTriangles(array)
+}
+
+function solvePartTwo(input){
+  var firstPass = parseInput(input)
+  var acc = 0;
+  for (var i = 0; i < 3; i++) {
+    var verticals = parseVertical(firstPass, [i])
+    acc += countTriangles(verticals);
+  }
+  return acc
 }
 
 
@@ -15,6 +24,21 @@ function parseInput(string){
       return !isNaN(el) 
     })
   })
+}
+
+function parseVertical(list, index){
+  var newArray = list.map(array=>{
+    return array[index]
+  })
+  return chunk(newArray, 3)
+}
+
+function chunk(array, chunkLength) {
+  var chunks = [];
+  for (var i = 0; i < array.length; i += chunkLength) {
+    chunks.push(array.slice(i, i + chunkLength));
+  }
+  return chunks
 }
 
 function countTriangles(array) {
@@ -35,8 +59,7 @@ function trueTriangle(array) {
   }
 }
 
-[ 144, 508, 567 ]
-
 module.exports = {
   solvePartOne: solvePartOne,
+  solvePartTwo: solvePartTwo
 }
