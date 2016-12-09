@@ -2,16 +2,7 @@
 PART ONE
 */
 
-function compose() {
-  var funcs = arguments;
-  return function() {
-    var args = arguments;
-    for (var i = funcs.length; i --> 0;) {
-      args = [funcs[i].apply(this, args)];
-    }
-    return args[0];
-  };
-};
+const helpers = require('../helpers/helpers.js')
 
 function solvePartOne(input) {
   return parseInput(input).reduce((acc,obj)=>{
@@ -25,7 +16,7 @@ See doc for convertToObject/1 for details
 */
 function parseInput(string) {
   // remember, these get applied right-to-left
-  var f = compose(createObjects, splitOnDashes, createArrays)
+  var f = helpers.compose(createObjects, splitOnDashes, createArrays)
   return f(string)
 }
 
@@ -81,7 +72,7 @@ See the docs for each individual function in compose() for details
 */
 function processName(string){
   // remember: these functions get called right to left
-  var f = compose(getChecksum, sortByLongest, splitAndSquash, toSortedArray)
+  var f = helpers.compose(getChecksum, sortByLongest, splitAndSquash, toSortedArray)
   return f(string)
 }
 

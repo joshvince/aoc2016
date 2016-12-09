@@ -1,6 +1,4 @@
-/*
-Helpers:
-*/
+var helpers = require('../helpers/helpers.js')
 
 function parseInput(longString){
   return longString.split(',').map(str => { 
@@ -16,18 +14,6 @@ function createInstructionObj(str){
     "blocks": parseInt(str.substring(1))
   }
 }
-
-// REMEMBER!!! The functions will be applied right-to-left
-function compose() {
-  var funcs = arguments;
-  return function() {
-    var args = arguments;
-    for (var i = funcs.length; i --> 0;) {
-      args = [funcs[i].apply(this, args)];
-    }
-    return args[0];
-  };
-};
 
 /*
 PART ONE:
@@ -112,7 +98,9 @@ function initialise(){
 }
 
 function processAll(positionObject, instructions){
-  var senseCheck = ['current', 'path', 'former'].filter(prop => { return Object.keys(positionObject).includes(prop) } )
+  var senseCheck = ['current', 'path', 'former'].filter(prop => { 
+    return Object.keys(positionObject).includes(prop) 
+  })
   if (senseCheck.length != 3) {
     throw new TypeError ("invalid positionObject: \n" + JSON.stringify(positionObject))
   }
@@ -134,13 +122,12 @@ function processAll(positionObject, instructions){
 function processOne(object, instructions) {
   var nextInstruction = instructions.shift();
   var result = executeOneCommand(object, nextInstruction)
-  // console.log(`process object is: \n ${JSON.stringify(result)} \n instructions list is: \n ${JSON.stringify(instructions)}`)
   return processAll(result, instructions)
 }
 
 function executeOneCommand(object, instruction) {
   var preppedObject = copyInstruction(object, instruction)
-  var execute = compose(updatePath, applyInstruction, moveCurrentToFormer)
+  var execute = helpers.compose(updatePath, applyInstruction, moveCurrentToFormer)
   return execute(preppedObject)
 }
 
@@ -165,13 +152,8 @@ function applyInstruction(object) {
 }
 
 function updatePath(object){
-  // console.log(`called updatePath with: \n ${JSON.stringify(object)}`)
   var newPath = calculateCoords(object.former.x, object.current.x, object.former.y, object.current.y)
-  // console.log(`received these coordinates for newPath: \n${newPath}\n which is this long: ${newPath.length}`)
-  // console.log(`object path is this: \n${object.path}`)
-  // var dupes = newPath.find(coord => { return object.path.includes(coord) });
   var dupes = newPath.find(coord => { return pairInArray(coord, object.path) })
-  // console.log(`returned this from dupes: \n${dupes}`)
   if (typeof dupes !== 'undefined') {
     return newObject(object, "match", dupes)
   }
