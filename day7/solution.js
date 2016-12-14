@@ -39,6 +39,14 @@ function findHypernet(string) {
   return string.match(/\[(.*?)\]/g).join("").split(/\[(.*?)\]/g).filter(String)
 }
 
+/*
+Does the opposite of findHypernet.
+Takes a string and returns only the supernet characters.
+*/
+function findSupernet(string) {
+  return string.split(/\[.*?\]/g)
+}
+
 
 // Takes in an array of strings and returns true if any of them have abbas inside them.
 function checkForAbba(arr) {
@@ -84,41 +92,88 @@ function match(string, pos, inc) {
 // PART TWO
 
 function solvePartTwo(input) {
-  var inp = input.split('\n')[3]
-  return createObjects(inp)
+  var f = helpers.compose(checkForMatches, createObject)
+  return input.split('\n').filter(str=>{
+    return f(str)
+  }).length
 }
 
-function createObjects(string) {
-  var hypernet = findHypernet(string)
-  hypernet.map(str=>{
-    string.replace(str, "")
-  })
-  return {hypernet: hypernet, other: string}
+/*
+Turns strings into objects of "abas"
+Does this by grabbing "aba"s from the supernet and the hypernet portions and keeping them separate
+*/
+function createObject(string) {
+  var hypernet = helpers.compose(findInArray, findHypernet)
+  var supernet = helpers.compose(findInArray, findSupernet)
+  return {
+    hypernet: hypernet(string),
+    supernet: supernet(string)
+  }
 }
 
-
-
-function findReverses(string, pos = 0) {
-  if (string.length < pos + 2) {
+/*
+Given an object, returns true if any of the supernet strings contain corresponding hypernet babs.
+Returns false if either of the arrays are empty (ie: contains no "abas" at all) or if there are no corresponding babs.
+*/
+function checkForMatches(obj) {
+  if (obj.supernet.length == 0 || obj.hypernet.length == 0) {
     return false
   }
-  else if(aba(string, pos) && bab(string, a, b, pos)){
-    return true
+  else {
+    return obj.supernet.some(supstr=>{
+      return obj.hypernet.some(hypstr=>{
+        return bab(supstr, hypstr)
+      })
+    })
   }
-  else if(aba(string, pos)){
-    var a = string[pos],
-    b = string[pos + 1]
+}
 
+/*
+maps an array calling findInString on each string.
+Returns the flattened results of findInString
+*/
+function findInArray(array) {
+  var arrays = array.map(str=>{
+    return findInString(str)
+  })
+  return flatten(arrays)
+}
+
+function flatten(arr) {
+  return Array.isArray(arr) ? [].concat(...arr.map(flatten)) : arr;
+}
+
+/*
+Recurses over a string to find abas and pushes them to the accumulator array.
+Returns the accumulator array.
+*/
+function findInString(string, acc = [], pos = 0) {
+  if (string.length < pos + 3) {
+    return acc
+  }
+  else if (aba(string, pos)) {
+    acc.push(`${string[pos]}${string[pos+1]}${string[pos]}`)
+    return findInString(string, acc, pos + 1)
   }
   else {
-    return findReverses(string, pos + 1)
+    return findInString(string, acc, pos + 1)
   }
 }
 
-function bab(string, a, b, pos) {
-  return (string[pos] == b && string[pos + 1] == a) ? true : false
+/*
+A "bab" is defined as "aba" & "bab"
+The second string must be the direct inverse of the first
+Returns a bool depending on whether the strings are a bab
+*/
+function bab(one, two) {
+  return (one[0] == two[1] && one[1] == two[0]) ? true : false
 }
 
+/*
+An "aba" is defined as "aba" or "lol".
+The first letter matches the third letter but not the second.
+Returns a bool depending on whether the letter in the string at pos starts an "aba"
+*/
 function aba(string, pos) {
   return (!match(string, pos, 1) && match(string, pos, 2)) ? true : false
 }
