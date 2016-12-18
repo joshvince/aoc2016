@@ -26,6 +26,10 @@ function fiveZeros(hash) {
   return (hash.substring(0,5) == '00000') ? true : false
 }
 
+/*
+Part Two
+*/
+
 function solvePartTwo(input) {
   return complexPassword(input)
 }
