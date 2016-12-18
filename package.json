@@ -19,6 +19,7 @@
   "dependencies": {
     "babel-register": "^6.18.0",
     "chai": "^3.5.0",
+    "js-md5": "^0.4.1",
     "mocha": "^3.2.0"
   }
 }
