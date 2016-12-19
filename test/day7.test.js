@@ -17,7 +17,6 @@ describe('Day 7', function(){
     var exampleInput = "aba[bab]xyz\nxyx[xyx]xyx\naaa[kek]eke\nzazbz[bzb]cdb"
     it('should solve the example input correctly', function(){
       var res = solution.solvePartTwo(exampleInput)
-      console.log(JSON.stringify(res))
       expect(res).to.equal(3)
     });
   });
