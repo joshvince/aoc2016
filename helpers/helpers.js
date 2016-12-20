@@ -1,5 +1,5 @@
 /*
-HELPER FUNCTIONS 
+HELPER FUNCTIONS
 Used in more than one module
 */
 
@@ -20,6 +20,14 @@ function compose() {
   };
 };
 
+/*
+Flattens nested arrays together and returns a flat array
+*/
+function flatten(arr) {
+  return Array.isArray(arr) ? [].concat(...arr.map(flatten)) : arr;
+}
+
 module.exports = {
-  compose: compose
+  compose: compose,
+  flatten: flatten
 }
