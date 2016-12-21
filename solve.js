@@ -2,7 +2,7 @@ var fs = require('fs');
 require('babel-register');
 
 function solve(day, part){
-  var directoryPath = `${__dirname}/day${day}`
+  var directoryPath = `${__dirname}/lib/day${day}`
   loadInput(day, directoryPath).then(data => {
     var Solution = require(`${directoryPath}/solution.js`)
     if (part === 1) {
@@ -34,4 +34,3 @@ module.exports = {
   load: loadInput,
   run: solve
 }
-
